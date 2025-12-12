@@ -1,0 +1,718 @@
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationApplication.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationApplication.java
+index 0eced0f..0506114 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationApplication.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationApplication.java
+@@ -5,6 +5,7 @@ import android.app.Application;
+ import com.facebook.react.ReactApplication;
+ import com.facebook.react.ReactNativeHost;
+ import com.facebook.soloader.SoLoader;
++import com.facebook.react.soloader.OpenSourceMergedSoMapping;
+ import com.reactnativenavigation.react.ReactGateway;
+ import com.reactnativenavigation.viewcontrollers.externalcomponent.ExternalComponentCreator;
+ 
+@@ -19,13 +20,17 @@ public abstract class NavigationApplication extends Application implements React
+ 	public static NavigationApplication instance;
+ 	final Map<String, ExternalComponentCreator> externalComponents = new HashMap<>();
+ 
+-	@Override
+-	public void onCreate() {
+-		super.onCreate();
++    @Override
++    public void onCreate() {
++        super.onCreate();
+         instance = this;
+-        SoLoader.init(this, false);
++        try {
++            SoLoader.init(this, OpenSourceMergedSoMapping.INSTANCE);
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
+         reactGateway = createReactGateway();
+-	}
++    }
+ 
+     /**
+      * Subclasses of NavigationApplication may override this method to create the singleton instance
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/options/params/ReactPlatformColor.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/options/params/ReactPlatformColor.kt
+index 5850dc0..a6b54e3 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/options/params/ReactPlatformColor.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/options/params/ReactPlatformColor.kt
+@@ -4,8 +4,8 @@ import com.facebook.react.bridge.ColorPropConverter
+ import com.facebook.react.bridge.ReadableMap
+ import com.reactnativenavigation.NavigationApplication
+ 
+-private fun parsePlatformColor(paths: ReadableMap) =
+-    ColorPropConverter.getColor(paths, NavigationApplication.instance)
++private fun parsePlatformColor(paths: ReadableMap): Int =
++    ColorPropConverter.getColor(paths, NavigationApplication.instance) ?: 0
+ 
+ class ReactPlatformColor(private val paths: ReadableMap) :
+     Colour(parsePlatformColor(paths)) {
+@@ -13,11 +13,11 @@ class ReactPlatformColor(private val paths: ReadableMap) :
+         return parsePlatformColor(paths)
+     }
+ 
+-    override fun get(defaultValue: Int?): Int? {
++    override fun get(defaultValue: Int?): Int {
+         return try {
+             parsePlatformColor(paths)
+         }catch (e:Exception){
+-            defaultValue
++            defaultValue ?: 0
+         }
+     }
+ }
+\ No newline at end of file
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/ReactView.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/ReactView.java
+index 90032df..3c98585 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/ReactView.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/ReactView.java
+@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
+ import android.content.Context;
+ import android.os.Bundle;
+ import android.view.MotionEvent;
++import android.view.View;
++import android.view.ViewGroup;
+ 
+ import com.facebook.react.ReactInstanceManager;
+ import com.facebook.react.ReactRootView;
+@@ -19,6 +21,8 @@ import com.reactnativenavigation.viewcontrollers.viewcontroller.IReactView;
+ import com.reactnativenavigation.views.component.Renderable;
+ 
+ import androidx.annotation.RestrictTo;
++import java.util.ArrayList;
++import java.util.List;
+ 
+ @SuppressLint("ViewConstructor")
+ public class ReactView extends ReactRootView implements IReactView, Renderable {
+@@ -35,7 +39,7 @@ public class ReactView extends ReactRootView implements IReactView, Renderable {
+         this.componentId = componentId;
+         this.componentName = componentName;
+         jsTouchDispatcher = new JSTouchDispatcher(this);
+-        setIsFabric(ReactFeatureFlags.enableFabricRenderer);
++        // setIsFabric(ReactFeatureFlags.enableFabricRenderer);
+     }
+ 
+     @Override
+@@ -64,7 +68,29 @@ public class ReactView extends ReactRootView implements IReactView, Renderable {
+ 
+     @Override
+     public void destroy() {
++        // get current children and id
++        ViewGroup rootViewGroup = getRootViewGroup();
++        int childCount = rootViewGroup.getChildCount();
++        int id = rootViewGroup.getId();
++        List<View> children = new ArrayList<>();
++        for (int i = 0; i < childCount; i++) {
++            children.add(rootViewGroup.getChildAt(i));
++        }
++
++        // since RN 0.71.x unmount will remove all children and reset the id
++        // which cause the onDropViewInstance not called.
+         unmountReactApplication();
++
++        // restore removed children and revert the id since RN 0.71.x
++        //  then the onDropViewInstance will be called.
++        //  and NativeViewHierarchyManager will help to remove these children later.
++        for (int i = 0; i < children.size(); i++) {
++            View child = children.get(i);
++            if (rootViewGroup.indexOfChild(child) < 0) {
++                rootViewGroup.addView(child);
++            }
++        }
++        rootViewGroup.setId(id);
+     }
+ 
+     public void sendComponentWillStart(ComponentType type) {
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/modal/ModalHostLayout.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/modal/ModalHostLayout.kt
+index 121aa6a..88094c3 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/modal/ModalHostLayout.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/modal/ModalHostLayout.kt
+@@ -34,7 +34,7 @@ open class ModalHostLayout(reactContext: ThemedReactContext) : ViewGroup(reactCo
+     }
+ 
+     @TargetApi(23)
+-    override fun dispatchProvideStructure(structure: ViewStructure?) {
++    override fun dispatchProvideStructure(structure: ViewStructure) {
+         mHostView.dispatchProvideStructure(structure)
+     }
+ 
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
+index 834d734..7a208bf 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactTypefaceUtils.java
+@@ -19,7 +19,7 @@ import android.text.TextUtils;
+ import androidx.annotation.Nullable;
+ import com.facebook.react.bridge.ReadableArray;
+ import com.facebook.react.views.text.ReactFontManager;
+-import com.facebook.react.views.text.ReactTextShadowNode;
++import com.facebook.react.common.ReactConstants;
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+@@ -96,12 +96,12 @@ public class ReactTypefaceUtils {
+ 
+     int want = 0;
+     if ((weight == Typeface.BOLD)
+-        || ((oldStyle & Typeface.BOLD) != 0 && weight == ReactTextShadowNode.UNSET)) {
++        || ((oldStyle & Typeface.BOLD) != 0 && weight == ReactConstants.UNSET)) {
+       want |= Typeface.BOLD;
+     }
+ 
+     if ((style == Typeface.ITALIC)
+-        || ((oldStyle & Typeface.ITALIC) != 0 && style == ReactTextShadowNode.UNSET)) {
++        || ((oldStyle & Typeface.ITALIC) != 0 && style == ReactConstants.UNSET)) {
+       want |= Typeface.ITALIC;
+     }
+ 
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactViewGroup.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactViewGroup.kt
+index f92580c..1053123 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactViewGroup.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ReactViewGroup.kt
+@@ -1,7 +1,9 @@
+ package com.reactnativenavigation.utils
+ 
+-import com.facebook.react.views.view.ReactViewBackgroundDrawable
++import com.facebook.react.common.annotations.UnstableReactNativeAPI
++import com.facebook.react.uimanager.drawable.CSSBackgroundDrawable
+ import com.facebook.react.views.view.ReactViewGroup
+ 
++@OptIn(UnstableReactNativeAPI::class)
+ val ReactViewGroup.borderRadius: Float
+-    get() = (background as? ReactViewBackgroundDrawable)?.fullBorderRadius ?: 0f
+\ No newline at end of file
++    get() = (background as? CSSBackgroundDrawable)?.fullBorderWidth ?: 0f
+\ No newline at end of file
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ViewUtils.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ViewUtils.java
+index cdce75b..bbd4c39 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ViewUtils.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/ViewUtils.java
+@@ -5,8 +5,6 @@ import android.view.View;
+ import android.view.ViewGroup;
+ import android.view.ViewParent;
+ 
+-import com.facebook.react.views.view.ReactViewBackgroundDrawable;
+-
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+@@ -14,6 +12,9 @@ import androidx.annotation.Nullable;
+ 
+ import static com.reactnativenavigation.utils.ObjectUtils.perform;
+ 
++import com.facebook.react.common.annotations.UnstableReactNativeAPI;
++import com.facebook.react.uimanager.drawable.CSSBackgroundDrawable;
++
+ public class ViewUtils {
+     @Nullable
+     public static <T extends View> T findChildByClass(ViewGroup root, Class<T> clazz) {
+@@ -107,9 +108,10 @@ public class ViewUtils {
+         return ((ViewGroup) parent).indexOfChild(view);
+     }
+ 
++    @UnstableReactNativeAPI
+     public static int getBackgroundColor(View view) {
+-        if (view.getBackground() instanceof ReactViewBackgroundDrawable) {
+-            return ((ReactViewBackgroundDrawable) view.getBackground()).getColor();
++        if (view.getBackground() instanceof CSSBackgroundDrawable) {
++            return ((CSSBackgroundDrawable) view.getBackground()).getColor();
+         }
+         throw new RuntimeException(view.getBackground().getClass().getSimpleName() + " is not ReactViewBackgroundDrawable");
+     }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/LayoutDirectionApplier.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/LayoutDirectionApplier.kt
+index 89216ae..cdfc2e9 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/LayoutDirectionApplier.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/LayoutDirectionApplier.kt
+@@ -1,15 +1,19 @@
+ package com.reactnativenavigation.viewcontrollers.viewcontroller
+ 
++import android.annotation.SuppressLint
+ import com.facebook.react.ReactInstanceManager
+ import com.facebook.react.modules.i18nmanager.I18nUtil
+ import com.reactnativenavigation.options.Options
+ 
+ class LayoutDirectionApplier {
+-    fun apply(root: ViewController<*>, options: Options, instanceManager: ReactInstanceManager) {
+-        if (options.layout.direction.hasValue() && instanceManager.currentReactContext != null) {
++    @SuppressLint("WrongConstant")
++    fun apply(root: ViewController<*>, options: Options) {
++        val currentContext = root.view?.context ?: return
++
++        if (options.layout.direction.hasValue()) {
+             root.activity.window.decorView.layoutDirection = options.layout.direction.get()
+-            I18nUtil.getInstance().allowRTL(instanceManager.currentReactContext, options.layout.direction.isRtl)
+-            I18nUtil.getInstance().forceRTL(instanceManager.currentReactContext, options.layout.direction.isRtl)
++            I18nUtil.instance.allowRTL(currentContext, options.layout.direction.isRtl)
++            I18nUtil.instance.forceRTL(currentContext, options.layout.direction.isRtl)
+         }
+     }
+ }
+\ No newline at end of file
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/RootPresenter.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/RootPresenter.java
+index 17c81ad..befb1c1 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/RootPresenter.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/viewcontrollers/viewcontroller/RootPresenter.java
+@@ -35,7 +35,7 @@ public class RootPresenter {
+     }
+ 
+     public void setRoot(ViewController appearingRoot, ViewController<?> disappearingRoot, Options defaultOptions, CommandListener listener, ReactInstanceManager reactInstanceManager) {
+-        layoutDirectionApplier.apply(appearingRoot, defaultOptions, reactInstanceManager);
++       layoutDirectionApplier.apply(appearingRoot, defaultOptions);
+         rootLayout.addView(appearingRoot.getView(), matchParentWithBehaviour(new BehaviourDelegate(appearingRoot)));
+         Options options = appearingRoot.resolveCurrentOptions(defaultOptions);
+         AnimationOptions enter = options.animations.setRoot.getEnter();
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/element/animators/BackgroundColorAnimator.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/element/animators/BackgroundColorAnimator.kt
+index 4ecc1a2..ab7ed30 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/element/animators/BackgroundColorAnimator.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/element/animators/BackgroundColorAnimator.kt
+@@ -4,21 +4,23 @@ import android.animation.Animator
+ import android.animation.ObjectAnimator
+ import android.view.View
+ import android.view.ViewGroup
++import com.facebook.react.common.annotations.UnstableReactNativeAPI
++import com.facebook.react.uimanager.drawable.CSSBackgroundDrawable
+ import com.facebook.react.views.text.ReactTextView
+-import com.facebook.react.views.view.ReactViewBackgroundDrawable
+ import com.reactnativenavigation.options.SharedElementTransitionOptions
+ import com.reactnativenavigation.utils.*
+ 
++@OptIn(UnstableReactNativeAPI::class)
+ class BackgroundColorAnimator(from: View, to: View) : PropertyAnimatorCreator<ViewGroup>(from, to) {
+     override fun shouldAnimateProperty(fromChild: ViewGroup, toChild: ViewGroup): Boolean {
+-        return fromChild.background is ReactViewBackgroundDrawable &&
+-                toChild.background is ReactViewBackgroundDrawable && (fromChild.background as ReactViewBackgroundDrawable).color != (toChild.background as ReactViewBackgroundDrawable).color
++        return fromChild.background is CSSBackgroundDrawable &&
++                toChild.background is CSSBackgroundDrawable && (fromChild.background as CSSBackgroundDrawable).color != (toChild.background as CSSBackgroundDrawable).color
+     }
+ 
+     override fun excludedViews() = listOf(ReactTextView::class.java)
+ 
+     override fun create(options: SharedElementTransitionOptions): Animator {
+-        val backgroundColorEvaluator = BackgroundColorEvaluator(to.background as ReactViewBackgroundDrawable)
++        val backgroundColorEvaluator = BackgroundColorEvaluator(to.background as CSSBackgroundDrawable)
+         val fromColor = ColorUtils.colorToLAB(ViewUtils.getBackgroundColor(from))
+         val toColor = ColorUtils.colorToLAB(ViewUtils.getBackgroundColor(to))
+ 
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/element/animators/BackgroundColorEvaluator.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/element/animators/BackgroundColorEvaluator.kt
+index 4480113..7ce0854 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/element/animators/BackgroundColorEvaluator.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/views/element/animators/BackgroundColorEvaluator.kt
+@@ -2,11 +2,13 @@ package com.reactnativenavigation.views.element.animators
+ 
+ import android.animation.TypeEvaluator
+ import androidx.core.graphics.ColorUtils
+-import com.facebook.react.views.view.ReactViewBackgroundDrawable
++import com.facebook.react.common.annotations.UnstableReactNativeAPI
++import com.facebook.react.uimanager.drawable.CSSBackgroundDrawable
+ 
+-class BackgroundColorEvaluator(private val background: ReactViewBackgroundDrawable) : TypeEvaluator<DoubleArray> {
++class BackgroundColorEvaluator @OptIn(UnstableReactNativeAPI::class) constructor(private val background: CSSBackgroundDrawable) : TypeEvaluator<DoubleArray> {
+     private val color = DoubleArray(3)
+ 
++    @OptIn(UnstableReactNativeAPI::class)
+     override fun evaluate(ratio: Float, from: DoubleArray, to: DoubleArray): DoubleArray {
+         ColorUtils.blendLAB(from, to, ratio.toDouble(), color)
+         background.color = com.reactnativenavigation.utils.ColorUtils.labToColor(color)
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/options/parsers/ColorParser.kt b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/options/parsers/ColorParser.kt
+index 857af34..d122b8a 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/options/parsers/ColorParser.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/options/parsers/ColorParser.kt
+@@ -13,7 +13,7 @@ object ColorParser {
+     private const val VAL_NO_COLOR = "NoColor"
+ 
+     @JvmStatic
+-    fun parse(context: Context?, json: JSONObject, colorName: String?): Colour {
++     fun parse(context: Context, json: JSONObject, colorName: String?): Colour {
+         if (json.has(KEY_RESOURCE_PATHS)) {
+             return ReactPlatformColor(JSONParser.convert(json))
+         }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
+index ea8516f..e9dea5a 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
+@@ -3,69 +3,35 @@ package com.reactnativenavigation.react.modal
+ import android.content.Context
+ import android.view.MotionEvent
+ import android.view.View
+-import com.facebook.react.bridge.*
+-import com.facebook.react.uimanager.*
++import com.facebook.react.bridge.ReactContext
++import com.facebook.react.uimanager.JSTouchDispatcher
++import com.facebook.react.uimanager.RootView
++import com.facebook.react.uimanager.UIManagerHelper
++import com.facebook.react.uimanager.common.UIManagerType
+ import com.facebook.react.uimanager.events.EventDispatcher
+ import com.facebook.react.views.view.ReactViewGroup
+ 
+ 
+ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
+-    private var hasAdjustedSize = false
+-    private var viewWidth = 0
+-    private var viewHeight = 0
+-    private val mJSTouchDispatcher = JSTouchDispatcher(this)
+ 
+-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+-        super.onSizeChanged(w, h, oldw, oldh)
+-        viewWidth = w
+-        viewHeight = h
+-        this.updateFirstChildView()
+-    }
+-    private fun updateFirstChildView() {
+-        if (this.childCount > 0) {
+-            hasAdjustedSize = false
+-            val viewTag = getChildAt(0).id
+-            val reactContext: ReactContext = this.getReactContext()
+-            reactContext.runOnNativeModulesQueueThread(object : GuardedRunnable(reactContext) {
+-                override fun runGuarded() {
+-                    val uiManager = this@ModalContentLayout.getReactContext().getNativeModule(
+-                            UIManagerModule::class.java
+-                    ) as UIManagerModule
+-                    uiManager.updateNodeSize(
+-                            viewTag,
+-                            this@ModalContentLayout.viewWidth,
+-                            this@ModalContentLayout.viewHeight
+-                    )
+-                }
+-            })
+-        } else {
+-            hasAdjustedSize = true
+-        }
+-    }
++    private val mJSTouchDispatcher = JSTouchDispatcher(this)
+ 
+-    override fun addView(child: View?, index: Int, params: LayoutParams?) {
+-        super.addView(child, index, params)
+-        if (hasAdjustedSize) {
+-            updateFirstChildView()
+-        }
+-    }
+-    override fun onChildStartedNativeGesture(child: View, androidEvent: MotionEvent?) {
++    override fun onChildStartedNativeGesture(child: View?, androidEvent: MotionEvent) {
+         mJSTouchDispatcher.onChildStartedNativeGesture(androidEvent, this.getEventDispatcher())
+     }
+-    override fun onChildStartedNativeGesture(androidEvent: MotionEvent?) {
++    override fun onChildStartedNativeGesture(androidEvent: MotionEvent) {
+         mJSTouchDispatcher.onChildStartedNativeGesture(androidEvent, this.getEventDispatcher())
+     }
+-    override fun onChildEndedNativeGesture(child: View, androidEvent: MotionEvent?) {
++    override fun onChildEndedNativeGesture(child: View, androidEvent: MotionEvent) {
+         mJSTouchDispatcher.onChildEndedNativeGesture(androidEvent, this.getEventDispatcher())
+     }
+     override fun requestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+-    private fun getEventDispatcher(): EventDispatcher? {
++    private fun getEventDispatcher(): EventDispatcher {
+         val reactContext: ReactContext = this.getReactContext()
+-        return reactContext.getNativeModule(UIManagerModule::class.java)!!.eventDispatcher
++        return UIManagerHelper.getEventDispatcher(reactContext, UIManagerType.FABRIC) ?: throw IllegalStateException("EventDispatcher for Fabric UI Manager is not found")
+     }
+ 
+-
+-    override fun handleException(t: Throwable?) {
++    override fun handleException(t: Throwable) {
+         getReactContext().handleException(RuntimeException(t))
+     }
+ 
+@@ -73,12 +39,12 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
+         return this.context as ReactContext
+     }
+ 
+-    override fun onInterceptTouchEvent(event: MotionEvent?): Boolean {
++    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+         mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
+         return super.onInterceptTouchEvent(event)
+     }
+ 
+-    override fun onTouchEvent(event: MotionEvent?): Boolean {
++    override fun onTouchEvent(event: MotionEvent): Boolean {
+         mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
+         super.onTouchEvent(event)
+         return true
+diff --git a/node_modules/react-native-navigation/lib/ios/BottomTabsBasePresenter.m b/node_modules/react-native-navigation/lib/ios/BottomTabsBasePresenter.m
+index 75aa424..6a244c2 100644
+--- a/node_modules/react-native-navigation/lib/ios/BottomTabsBasePresenter.m
++++ b/node_modules/react-native-navigation/lib/ios/BottomTabsBasePresenter.m
+@@ -29,8 +29,12 @@
+     [self applyBackgroundColor:[withDefault.bottomTabs.backgroundColor withDefault:nil]
+                    translucent:[withDefault.bottomTabs.translucent withDefault:NO]];
+     [bottomTabs setTabBarHideShadow:[withDefault.bottomTabs.hideShadow withDefault:NO]];
+-    [bottomTabs setTabBarStyle:[RCTConvert UIBarStyle:[withDefault.bottomTabs.barStyle
+-                                                          withDefault:@"default"]]];
++    if ([[withDefault.bottomTabs.barStyle withDefault:@"default"]
++                isEqualToString:@"black"]) {
++        [bottomTabs setTabBarStyle:UIBarStyleBlack];
++    }else{
++        [bottomTabs setTabBarStyle:UIBarStyleDefault];
++    }
+     [self applyTabBarBorder:withDefault.bottomTabs];
+     [self applyTabBarShadow:withDefault.bottomTabs.shadow];
+ }
+@@ -60,7 +64,12 @@
+     }
+ 
+     if (mergeOptions.bottomTabs.barStyle.hasValue) {
+-        [bottomTabs setTabBarStyle:[RCTConvert UIBarStyle:mergeOptions.bottomTabs.barStyle.get]];
++        if ([[mergeOptions.bottomTabs.barStyle withDefault:@"default"]
++                    isEqualToString:@"black"]) {
++            [bottomTabs setTabBarStyle:UIBarStyleBlack];
++        }else{
++            [bottomTabs setTabBarStyle:UIBarStyleDefault];
++        }
+     }
+ 
+     if (mergeOptions.bottomTabs.translucent.hasValue) {
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
+index d91005d..14e40dc 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNBottomTabsController.m
+@@ -81,6 +81,14 @@
+ 
+ - (void)viewDidLoad {
+     [super viewDidLoad];
++
++    if (@available(iOS 18.0, *))
++    {
++        if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad)
++        {
++            self.traitOverrides.horizontalSizeClass = UIUserInterfaceSizeClassCompact;
++        }
++    }
+ }
+ 
+ - (void)createTabBarItems:(NSArray<UIViewController *> *)childViewControllers {
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNStackPresenter.m b/node_modules/react-native-navigation/lib/ios/RNNStackPresenter.m
+index 5f4218e..43b25f7 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNStackPresenter.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNStackPresenter.m
+@@ -19,8 +19,9 @@
+ @end
+ @implementation RNNStackPresenter
+ 
+-- (instancetype)initWithComponentRegistry:(RNNReactComponentRegistry *)componentRegistry
+-                           defaultOptions:(RNNNavigationOptions *)defaultOptions {
++- (instancetype)
++    initWithComponentRegistry:(RNNReactComponentRegistry *)componentRegistry
++               defaultOptions:(RNNNavigationOptions *)defaultOptions {
+     self = [super initWithDefaultOptions:defaultOptions];
+     _componentRegistry = componentRegistry;
+     _interactivePopGestureDelegate = [InteractivePopGestureDelegate new];
+@@ -29,8 +30,8 @@
+ 
+ - (void)bindViewController:(UINavigationController *)boundViewController {
+     [super bindViewController:boundViewController];
+-    _topBarPresenter =
+-        [TopBarPresenterCreator createWithBoundedNavigationController:self.stackController];
++    _topBarPresenter = [TopBarPresenterCreator
++        createWithBoundedNavigationController:self.stackController];
+     _interactivePopGestureDelegate.navigationController = boundViewController;
+     _interactivePopGestureDelegate.originalDelegate =
+         boundViewController.interactivePopGestureRecognizer.delegate;
+@@ -54,34 +55,47 @@
+     return (RNNStackController *)self.boundViewController;
+ }
+ 
+-- (BOOL)shouldPopItem:(UINavigationItem *)item options:(RNNNavigationOptions *)options {
+-    RNNNavigationOptions *withDefault = [options withDefault:[self defaultOptions]];
++- (BOOL)shouldPopItem:(UINavigationItem *)item
++              options:(RNNNavigationOptions *)options {
++    RNNNavigationOptions *withDefault =
++        [options withDefault:[self defaultOptions]];
+     return [withDefault.topBar.backButton.popStackOnPress withDefault:YES];
+ }
+ 
+ - (void)applyOptions:(RNNNavigationOptions *)options {
+     [super applyOptions:options];
+     RNNStackController *stack = self.stackController;
+-    RNNNavigationOptions *withDefault = [options withDefault:[self defaultOptions]];
++    RNNNavigationOptions *withDefault =
++        [options withDefault:[self defaultOptions]];
+ 
+-    [_interactivePopGestureDelegate setEnabled:[withDefault.popGesture withDefault:YES]];
+-    stack.interactivePopGestureRecognizer.delegate = _interactivePopGestureDelegate;
++    [_interactivePopGestureDelegate
++        setEnabled:[withDefault.popGesture withDefault:YES]];
++    stack.interactivePopGestureRecognizer.delegate =
++        _interactivePopGestureDelegate;
+ 
+-    [stack
+-        setBarStyle:[RCTConvert UIBarStyle:[withDefault.topBar.barStyle withDefault:@"default"]]];
+-    [stack setRootBackgroundImage:[withDefault.rootBackgroundImage withDefault:nil]];
++    if ([[withDefault.topBar.barStyle withDefault:@"default"]
++            isEqualToString:@"black"]) {
++        [stack setBarStyle:UIBarStyleBlack];
++    } else {
++        [stack setBarStyle:UIBarStyleDefault];
++    }
++    [stack setRootBackgroundImage:[withDefault.rootBackgroundImage
++                                      withDefault:nil]];
+     [stack setNavigationBarTestId:[withDefault.topBar.testID withDefault:nil]];
+-    [stack setNavigationBarVisible:[withDefault.topBar.visible withDefault:YES]
+-                          animated:[withDefault.topBar.animate withDefault:YES]];
++    [stack
++        setNavigationBarVisible:[withDefault.topBar.visible withDefault:YES]
++                       animated:[withDefault.topBar.animate withDefault:YES]];
+     [stack hideBarsOnScroll:[withDefault.topBar.hideOnScroll withDefault:NO]];
+ 
+     [_topBarPresenter applyOptions:withDefault.topBar];
+ 
+-    [stack setNavigationBarBlur:[withDefault.topBar.background.blur withDefault:NO]];
+-    [stack
+-        setNavigationBarClipsToBounds:[withDefault.topBar.background.clipToBounds withDefault:NO]];
++    [stack setNavigationBarBlur:[withDefault.topBar.background.blur
++                                    withDefault:NO]];
++    [stack setNavigationBarClipsToBounds:[withDefault.topBar.background
++                                                 .clipToBounds withDefault:NO]];
+ 
+-    [stack.view setBackgroundColor:[withDefault.layout.backgroundColor withDefault:nil]];
++    [stack.view setBackgroundColor:[withDefault.layout.backgroundColor
++                                       withDefault:nil]];
+     if (options.topBar.background.component.name.hasValue) {
+         [self setCustomNavigationComponentBackground:options perform:nil];
+     }
+@@ -89,7 +103,8 @@
+ 
+ - (void)applyOptionsOnViewDidLayoutSubviews:(RNNNavigationOptions *)options {
+     [super applyOptionsOnViewDidLayoutSubviews:options];
+-    RNNNavigationOptions *withDefault = [options withDefault:[self defaultOptions]];
++    RNNNavigationOptions *withDefault =
++        [options withDefault:[self defaultOptions]];
+     if (withDefault.topBar.background.component.name.hasValue) {
+         [self presentBackgroundComponent];
+     }
+@@ -118,7 +133,8 @@
+ 
+     if (mergeOptions.topBar.visible.hasValue) {
+         [stack setNavigationBarVisible:mergeOptions.topBar.visible.get
+-                              animated:[mergeOptions.topBar.animate withDefault:YES]];
++                              animated:[mergeOptions.topBar.animate
++                                           withDefault:YES]];
+     }
+ 
+     if (mergeOptions.topBar.hideOnScroll.hasValue) {
+@@ -126,11 +142,17 @@
+     }
+ 
+     if (mergeOptions.topBar.barStyle.hasValue) {
+-        [stack setBarStyle:[RCTConvert UIBarStyle:mergeOptions.topBar.barStyle.get]];
++        if ([[mergeOptions.topBar.barStyle withDefault:@"default"]
++                isEqualToString:@"black"]) {
++            [stack setBarStyle:UIBarStyleBlack];
++        } else {
++            [stack setBarStyle:UIBarStyleDefault];
++        }
+     }
+ 
+     if (mergeOptions.topBar.background.clipToBounds.hasValue) {
+-        [stack setNavigationBarClipsToBounds:[mergeOptions.topBar.background.clipToBounds get]];
++        [stack setNavigationBarClipsToBounds:[mergeOptions.topBar.background
++                                                     .clipToBounds get]];
+     }
+ 
+     if (mergeOptions.topBar.background.blur.hasValue) {
+@@ -145,9 +167,11 @@
+         [stack.view setBackgroundColor:mergeOptions.layout.backgroundColor.get];
+     }
+ 
+-    RNNNavigationOptions *withDefault = (RNNNavigationOptions *)[[resolvedOptions
+-        mergeOptions:mergeOptions] withDefault:[self defaultOptions]];
+-    [_topBarPresenter mergeOptions:mergeOptions.topBar withDefault:withDefault.topBar];
++    RNNNavigationOptions *withDefault =
++        (RNNNavigationOptions *)[[resolvedOptions mergeOptions:mergeOptions]
++            withDefault:[self defaultOptions]];
++    [_topBarPresenter mergeOptions:mergeOptions.topBar
++                       withDefault:withDefault.topBar];
+ 
+     if (mergeOptions.topBar.backButton.visible.hasValue &&
+         withDefault.topBar.backButton.testID.hasValue) {
+@@ -157,43 +181,50 @@
+ 
+ - (void)renderComponents:(RNNNavigationOptions *)options
+                  perform:(RNNReactViewReadyCompletionBlock)readyBlock {
+-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+-      dispatch_group_t group = dispatch_group_create();
+-
+-      dispatch_group_enter(group);
+-      dispatch_async(dispatch_get_main_queue(), ^{
+-        [self setCustomNavigationComponentBackground:options
+-                                             perform:^{
+-                                               dispatch_group_leave(group);
+-                                             }];
+-      });
+-
+-      dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+-
+-      dispatch_async(dispatch_get_main_queue(), ^{
+-        if (readyBlock) {
+-            readyBlock();
+-        }
+-      });
+-    });
++    dispatch_async(
++        dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
++          dispatch_group_t group = dispatch_group_create();
++
++          dispatch_group_enter(group);
++          dispatch_async(dispatch_get_main_queue(), ^{
++            [self setCustomNavigationComponentBackground:options
++                                                 perform:^{
++                                                   dispatch_group_leave(group);
++                                                 }];
++          });
++
++          dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
++
++          dispatch_async(dispatch_get_main_queue(), ^{
++            if (readyBlock) {
++                readyBlock();
++            }
++          });
++        });
+ }
+ 
+ - (void)setCustomNavigationComponentBackground:(RNNNavigationOptions *)options
+-                                       perform:(RNNReactViewReadyCompletionBlock)readyBlock {
+-    RNNNavigationOptions *withDefault = [options withDefault:[self defaultOptions]];
++                                       perform:
++                                           (RNNReactViewReadyCompletionBlock)
++                                               readyBlock {
++    RNNNavigationOptions *withDefault =
++        [options withDefault:[self defaultOptions]];
+     RNNStackController *stack = self.stackController;
+-    if (![withDefault.topBar.background.component.waitForRender withDefault:NO] && readyBlock) {
++    if (![withDefault.topBar.background.component.waitForRender
++            withDefault:NO] &&
++        readyBlock) {
+         readyBlock();
+         readyBlock = nil;
+     }
+ 
+     if (withDefault.topBar.background.component.name.hasValue) {
+-        NSString *currentChildComponentId = [stack getCurrentChild].layoutInfo.componentId;
+-        _topBarBackgroundReactView =
+-            [_componentRegistry createComponentIfNotExists:withDefault.topBar.background.component
+-                                         parentComponentId:currentChildComponentId
+-                                             componentType:RNNComponentTypeTopBarBackground
+-                                       reactViewReadyBlock:readyBlock];
++        NSString *currentChildComponentId =
++            [stack getCurrentChild].layoutInfo.componentId;
++        _topBarBackgroundReactView = [_componentRegistry
++            createComponentIfNotExists:withDefault.topBar.background.component
++                     parentComponentId:currentChildComponentId
++                         componentType:RNNComponentTypeTopBarBackground
++                   reactViewReadyBlock:readyBlock];
+ 
+     } else {
+         [_topBarBackgroundReactView componentDidDisappear];
+@@ -210,9 +241,10 @@
+     if (_customTopBarBackground) {
+         [_customTopBarBackground removeFromSuperview];
+     }
+-    _customTopBarBackground = [[RNNCustomTitleView alloc] initWithFrame:stack.navigationBar.bounds
+-                                                                subView:_topBarBackgroundReactView
+-                                                              alignment:@"fill"];
++    _customTopBarBackground =
++        [[RNNCustomTitleView alloc] initWithFrame:stack.navigationBar.bounds
++                                          subView:_topBarBackgroundReactView
++                                        alignment:@"fill"];
+ 
+     [stack.navigationBar insertSubview:_customTopBarBackground atIndex:1];
+     [_topBarBackgroundReactView componentDidAppear];
