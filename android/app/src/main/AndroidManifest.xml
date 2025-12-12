@@ -2,6 +2,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Request permission for Android version 33+ -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"

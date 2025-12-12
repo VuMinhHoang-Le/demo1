@@ -1,38 +1,83 @@
-// In index.js of a new project
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { Navigation } from 'react-native-navigation';
 
-const HomeScreen = (props) => {
-  return (
-    <View style={styles.root}>
-      <Text>Home Screen</Text>
-    </View>
-  );
-};
-Navigation.registerComponent('Home', () => HomeScreen);
+import { Home, Search } from './screen';
+
+import {
+  requestLocationPermission,
+  checkLocationPermissionToRequestOrGetLocation,
+  getDeviceLocation,
+} from './utils/PermissionsManager';
+
+Navigation.registerComponent('Home', () => props => <Home {...props} />);
+Navigation.registerComponent('Search', () => props => <Search {...props} />);
 
 Navigation.events().registerAppLaunchedListener(async () => {
+  let GpsCoords = null;
+console.log("here 18");
+ try {
+  console.log("here 20");
+   const granted = await checkLocationPermissionToRequestOrGetLocation().catch( err=> {
+  console.log(err);
+
+
+  });
+ } catch (error) {
+  console.log("error: ", error);
+  
+ }
+  if (result.granted) {
+    try {
+      const pos = await getDeviceLocation();
+      if (pos && pos.coords) {
+        GpsCoords = {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        };
+      }
+    } catch (err) {
+        console.warn('unable to fetch GPS location', err);
+    }
+  } else {
+    await requestLocationPermission();
+  }
+
   Navigation.setRoot({
     root: {
-      stack: {
+      bottomTabs: {
         children: [
           {
-            component: {
-              name: 'Home'
-            }
-          }
-        ]
-      }
-    }
+            stack: {
+              children: [
+                {
+                  component: {
+                    name: 'Home',
+                    passProps: { GpsCoords },
+                  },
+                },
+              ],
+              options: {
+                bottomTab: { text: 'Home' },
+              },
+            },
+          },
+          {
+            stack: {
+              children: [
+                {
+                  component: {
+                    name: 'Search',
+                  },
+                },
+              ],
+              options: {
+                bottomTab: { text: 'Search' },
+              },
+            },
+          },
+        ],
+      },
+    },
   });
-});
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'whitesmoke'
-  }
 });
