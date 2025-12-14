@@ -14,34 +14,33 @@ Navigation.registerComponent('Home', () => props => <Home {...props} />);
 Navigation.registerComponent('Search', () => props => <Search {...props} />);
 
 Navigation.events().registerAppLaunchedListener(async () => {
-  let GpsCoords = null;
-console.log("here 18");
- try {
-  console.log("here 20");
-   const granted = await checkLocationPermissionToRequestOrGetLocation().catch( err=> {
-  console.log(err);
-
-
-  });
- } catch (error) {
-  console.log("error: ", error);
-  
- }
-  if (result.granted) {
-    try {
-      const pos = await getDeviceLocation();
-      if (pos && pos.coords) {
-        GpsCoords = {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-        };
-      }
-    } catch (err) {
-        console.warn('unable to fetch GPS location', err);
-    }
-  } else {
-    await requestLocationPermission();
-  }
+  // let GpsCoords = null;
+  // console.log('here 18');
+  // try {
+  //   console.log('here 20');
+  //   const granted = await checkLocationPermissionToRequestOrGetLocation().catch(
+  //     err => {
+  //       console.log(err);
+  //     },
+  //   );
+  // } catch (error) {
+  //   console.log('error: ', error);
+  // }
+  // if (result.granted) {
+  //   try {
+  //     const pos = await getDeviceLocation();
+  //     if (pos && pos.coords) {
+  //       GpsCoords = {
+  //         latitude: pos.coords.latitude,
+  //         longitude: pos.coords.longitude,
+  //       };
+  //     }
+  //   } catch (err) {
+  //     console.warn('unable to fetch GPS location', err);
+  //   }
+  // } else {
+  //   await requestLocationPermission();
+  // }
 
   Navigation.setRoot({
     root: {
@@ -53,7 +52,6 @@ console.log("here 18");
                 {
                   component: {
                     name: 'Home',
-                    passProps: { GpsCoords },
                   },
                 },
               ],
