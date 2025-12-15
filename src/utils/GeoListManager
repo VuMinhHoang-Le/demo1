@@ -1,0 +1,7 @@
+
+export const GEO_DATA = [
+{id:'1', title: 'Vietnam'},
+{id:'2', title: 'Da Namg'},
+{id:'3', title: 'Ho CHi Minh'},
+{id:'4', title: 'Ha Noi'},
+]

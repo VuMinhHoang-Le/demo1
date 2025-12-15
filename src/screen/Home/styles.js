@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { Navigation } from 'react-native-navigation';
 
-const HomeStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -10,4 +10,4 @@ const HomeStyles = StyleSheet.create({
   }
 });
 
-export default HomeStyles;
+export default styles;

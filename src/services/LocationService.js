@@ -15,12 +15,14 @@ export async function getDeviceLocation() {
 }
 
 
-async function checkLocationPermission() {
-  if (!isAndroid()) return RESULTS.GRANTED;
 
-  try {
-    return check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-  } catch (error) {
-    console.log('Error: cannot check permission - ', error);
-  }
-}
+
+// async function checkLocationPermission() {
+//   if (!isAndroid()) return RESULTS.GRANTED;
+
+//   try {
+//     return check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+//   } catch (error) {
+//     console.log('Error: cannot check permission - ', error);
+//   }
+// }
