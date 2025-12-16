@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { RESULTS } from 'react-native-permissions';
-
 import { fetchWeatherHourlyToday } from '../../api/OpenMeteoApi';
 import { getDeviceLocation } from '../../services/LocationService';
 import { getCurrentDateTime } from '../../utils/DateTimeManager';
@@ -10,13 +9,21 @@ import {
   requestLocationPermission,
 } from '../../utils/PermissionsManager';
 import styles from './styles';
+import { useSelector } from 'react-redux';
 
-const Home = props => {
+const HomeScreen = props => {
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [coords, setCoords] = useState(null);
   const [weather, setWeather] = useState(null);
   const [currentHour, setCurrentHour] = useState(0);
   const [loadingIndicator, setLoadingIndicator] = useState(true);
+
+  const permission = useSelector(
+    state => state.permissionData.permissionGranted,
+  );
+  const currentTime = useSelector(
+    state => state.currentLocationInfoData.currentTime,
+  );
 
   // Initialize when open app
   useEffect(() => {
@@ -84,6 +91,8 @@ const Home = props => {
           <Text style={styles.timeText}>Current time: {currentHour}</Text>
           <Text style={styles.timeText}>{coords.latitude}</Text>
           <Text style={styles.timeText}>{coords.longitude}</Text>
+          <Text> {String(permission)} </Text>
+          <Text> {currentTime} </Text>
         </View>
       ) : (
         <View>
@@ -99,9 +108,9 @@ const Home = props => {
   );
 };
 
-Home.options = {
+HomeScreen.options = {
   topBar: { title: { text: 'Home' } },
   bottomTab: { text: 'Home' },
 };
 
-export default Home;
+export default HomeScreen;

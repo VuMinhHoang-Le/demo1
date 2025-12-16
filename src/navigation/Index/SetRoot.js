@@ -1,8 +1,7 @@
-import React from 'react';
 import { Navigation } from 'react-native-navigation';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { FAVOURITE_SCREEN, HOME_SCREEN, SEARCH_SCREEN } from '../Screens';
 
-export function setRoot() {
+export function setIndexBottomTab() {
   Navigation.setRoot({
     root: {
       bottomTabs: {
@@ -12,7 +11,8 @@ export function setRoot() {
               children: [
                 {
                   component: {
-                    name: 'Home',
+                    id: HOME_SCREEN,
+                    name: HOME_SCREEN,
                   },
                 },
               ],
@@ -26,7 +26,23 @@ export function setRoot() {
               children: [
                 {
                   component: {
-                    name: 'Search',
+                    id: SEARCH_SCREEN,
+                    name: SEARCH_SCREEN,
+                  },
+                },
+              ],
+              options: {
+                bottomTab: { text: 'Search' },
+              },
+            },
+          },
+          {
+            stack: {
+              children: [
+                {
+                  component: {
+                    id: FAVOURITE_SCREEN,
+                    name: FAVOURITE_SCREEN,
                   },
                 },
               ],

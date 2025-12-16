@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import styles from './styles';
-
 import { SearchBar } from '../../components/SearchBar/SearchBar';
 import { List } from '../../components/List/List';
 import { GEO_DATA } from '../../utils/GeoListManager';
 
-const Search = props => {
+const SearchScreen = props => {
   const geoData = GEO_DATA;
 
   const [data, setData] = useState([]);
@@ -46,7 +45,7 @@ const Search = props => {
   );
 };
 
-Search.options = {
+SearchScreen.options = {
   topBar: {
     title: {
       text: 'Search',
@@ -57,4 +56,4 @@ Search.options = {
   },
 };
 
-export default Search;
+export default SearchScreen;
