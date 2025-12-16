@@ -33,12 +33,11 @@ const Home = props => {
   useEffect(() => {
     if (!coords) return;
     fetchWeatherData(coords);
-    
   }, [coords]);
 
   async function init() {
     const status = await checkLocationPermission();
-    
+
     if (status === RESULTS.GRANTED) {
       setPermissionGranted(true);
     } else {
@@ -61,7 +60,10 @@ const Home = props => {
 
   async function fetchWeatherData(coords) {
     try {
-      const data = await fetchWeatherHourlyToday(coords.latitude, coords.longitude);
+      const data = await fetchWeatherHourlyToday(
+        coords.latitude,
+        coords.longitude,
+      );
       setWeather(data);
     } catch (err) {
       console.warn('fetchWeatherData error', err);
@@ -73,17 +75,23 @@ const Home = props => {
   return (
     <View style={styles.root}>
       {weather ? (
-        <View>
-          
-          <Text>Weather</Text>
-          <Text>Temperature: {weather.hourly.temperature_2m[currentHour]} °C</Text>
-          <Text>Current time: {currentHour}</Text>
-          <Text>{coords.latitude}</Text>
-          <Text>{coords.longitude}</Text>
+        <View style={styles.weatherBox}>
+          <View></View>
+          <Text style={styles.titleText}>Weather</Text>
+          <Text style={styles.temperatureText}>
+            Temperature: {weather.hourly.temperature_2m[currentHour]} °C
+          </Text>
+          <Text style={styles.timeText}>Current time: {currentHour}</Text>
+          <Text style={styles.timeText}>{coords.latitude}</Text>
+          <Text style={styles.timeText}>{coords.longitude}</Text>
         </View>
       ) : (
         <View>
-          <ActivityIndicator size='large' color='blue' animating={loadingIndicator} />
+          <ActivityIndicator
+            size="large"
+            color="blue"
+            animating={loadingIndicator}
+          />
           <Text>No weather data yet</Text>
         </View>
       )}

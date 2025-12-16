@@ -1,13 +1,27 @@
 import { StyleSheet } from 'react-native';
-import { Navigation } from 'react-native-navigation';
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'whitesmoke'
-  }
+    justifyContent: 'top',
+    backgroundColor: 'whitesmoke',
+  },
+  weatherBox: {
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 10,
+    marginTop: 20,
+  },
+  temperatureText: {
+    fontSize: 32,
+  },
+  timeText: {
+    fontSize: 24,
+  },
+  titleText: {
+    fontSize: 32,
+  },
 });
 
 export default styles;

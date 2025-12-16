@@ -24,7 +24,11 @@
     "react-native-navigation": "^7.40.3",
     "react-native-permissions": "^5.4.2",
     "react-redux": "^9.2.0",
-    "redux": "^5.0.1"
+    "redux": "^5.0.1",
+    "redux-actions": "^2.6.5",
+    "redux-persist": "^6.0.0",
+    "redux-saga": "^1.1.1",
+    "reselect": "^4.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

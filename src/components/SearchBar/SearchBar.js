@@ -2,47 +2,32 @@ import React from 'react';
 import { StyleSheet, TextInput, View, Keyboard, Button } from 'react-native';
 
 export const SearchBar = ({
-  clicked,
-  setClicked,
+  clickedSearchBar,
+  setClickedSearchBar,
   searchValue,
   setSearchValue,
 }) => {
   return (
     <View style={styles.container}>
-      <View>
-        <TextInput
-          style={styles.input}
-          placeholder="Type a city or country"
-          value={searchValue}
-          onChangeText={setSearchValue}
-          onFocus={() => {
-            setClicked(true);
-          }}
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Type a city or country"
+        value={searchValue}
+        onChangeText={setSearchValue}
+        onFocus={() => {
+          setClickedSearchBar(true);
+        }}
+      />
+      <View style={styles.button}>
+        <Button title="Search" onPress={() => {}} />
       </View>
-      <View>
-        <Button
-          title="Search"
-          borderWidth={10}
-          borderRadius={10}
-          margin={10}
-          paddingVertical={10}
-          paddingHorizontal={10}
-          onPress={() => {}}
-        />
-      </View>
-      <View>
+      <View style={styles.button}>
         <Button
           title="Cancel"
-          borderWidth={10}
-          borderRadius={10}
-          margin={10}
-          paddingVertical={10}
-          paddingHorizontal={10}
           onPress={() => {
             Keyboard.dismiss();
-            setSearchValue("");
-            setClicked(false);
+            setSearchValue('');
+            setClickedSearchBar(false);
           }}
         />
       </View>
@@ -52,20 +37,21 @@ export const SearchBar = ({
 
 const styles = StyleSheet.create({
   input: {
-    fontSize: 20,
-    marginLeft: 10,
+    height: 45,
     width: '90%',
+    margin: 5,
     borderWidth: 1,
-    borderColor: '#999',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 10,
+    paddingStart: 10,
+    paddingEnd: 10,
   },
   container: {
-    margin: 15,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flexDirection: 'row',
-    width: '90%',
+    flex: 1, // Take up the full screen
+    alignItems: 'center'
+  },
+  button: {
+    width: '60%',
+    marginTop: 5,
+    marginBottom: 5,
   },
 });
