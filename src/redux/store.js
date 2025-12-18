@@ -1,23 +1,20 @@
-import { combineReducers, createStore } from 'redux';
+import { combineReducers, createStore, applyMiddleware } from 'redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { persistStore, persistReducer } from 'redux-persist';
+import createSagaMiddleware from 'redux-saga';
 
-const testState = {
-    test: true,
-}
+import { rootReducer } from './rootReducer';
+import rootSaga from './rootSaga';
 
-const permissionState = {
-    permissionGranted: false,
-}
+const sagaMiddleware = createSagaMiddleware();
 
-const currentLocationState = {
-    gpsCoordinates: null,
-    currentTime: 1,
-    weather: null,
-}
+const persistConfig = {
+  key: 'root',
+  storage: AsyncStorage,
+};
 
-const rootReducer = combineReducers({
-    testData: () => testState,
-    permissionData: () => permissionState,
-    currentLocationInfoData: () => currentLocationState,
-})
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export const store = createStore(rootReducer);
+export const store = createStore(persistedReducer, applyMiddleware(sagaMiddleware));
+export const persistor = persistStore(store);
+sagaMiddleware.run(rootSaga)

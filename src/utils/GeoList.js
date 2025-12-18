@@ -2,7 +2,7 @@ export const GEO_DATA = [
   /* ===================== Vietnam (84) ===================== */
   { id: '84000', title: 'Vietnam', name: 'Vietnam' },
   { id: '84001', title: 'Ha Noi, Vietnam', name: 'Ha Noi' },
-  { id: '84002', title: 'Ho Chi Minh City, Vietnam', name: 'Ho Chi Minh City' },
+  { id: '84002', title: 'Ho Chi Minh City, Vietnam', name: 'Ho Chi Minh' },
   { id: '84003', title: 'Da Nang, Vietnam', name: 'Da Nang' },
   { id: '84004', title: 'Hai Phong, Vietnam', name: 'Hai Phong' },
   { id: '84005', title: 'Can Tho, Vietnam', name: 'Can Tho' },
@@ -42,7 +42,6 @@ export const GEO_DATA = [
   { id: '86004', title: 'Shenzhen, China', name: 'Shenzhen' },
   { id: '86005', title: 'Chengdu, China', name: 'Chengdu' },
   { id: '86006', title: 'Wuhan, China', name: 'Wuhan' },
-  { id: '86007', title: 'Xi’an, China', name: 'Xi’an' },
   { id: '86008', title: 'Hangzhou, China', name: 'Hangzhou' },
   { id: '86009', title: 'Nanjing, China', name: 'Nanjing' },
   { id: '86010', title: 'Suzhou, China', name: 'Suzhou' },

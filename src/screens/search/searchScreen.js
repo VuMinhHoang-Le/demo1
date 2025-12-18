@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import styles from './styles';
-import { SearchBar } from '../../components/SearchBar/SearchBar';
-import { List } from '../../components/List/List';
-import { GEO_DATA } from '../../utils/GeoListManager';
+import { SearchBar } from '../../components/search/searchBar';
+import { List } from '../../components/search/list';
+import { GEO_DATA } from '../../utils/GeoList';
+import { useSelector, useDispatch } from 'react-redux';
+import { getSearchLocationWeatherHandled } from '../../redux/weather/actions';
 
 const SearchScreen = props => {
   const geoData = GEO_DATA;
 
-  const [data, setData] = useState([]);
+  const [filterData, setFilterData] = useState([]);
   const [searchValue, setSearchValue] = useState('');
   const [clickedSearchBar, setClickedSearchBar] = useState(false);
   const dataHolder = React.useRef(geoData);
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
     if (searchValue.length >= 2) {
       filterSearch(searchValue);
-    } else setData([]);
+    } else setFilterData([]);
   }, [searchValue]);
 
   function filterSearch(searchValue) {
@@ -25,7 +29,7 @@ const SearchScreen = props => {
       const searchValueData = searchValue.toUpperCase();
       return itemData.includes(searchValueData);
     });
-    setData(updatedData);
+    setFilterData(updatedData);
   }
 
   return (
@@ -36,9 +40,13 @@ const SearchScreen = props => {
         clickedSearchBar={clickedSearchBar}
         setClickedSearchBar={setClickedSearchBar}
       />
+      
+
       {clickedSearchBar && (
         <View style={styles.list}>
-          <List data={data} onPressItem={item => {}} />
+          <List data={filterData} onPressItem={item => {
+            dispatch(getSearchLocationWeatherHandled(item.name));
+          }} />
         </View>
       )}
     </View>

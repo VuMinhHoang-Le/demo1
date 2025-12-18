@@ -1,5 +1,5 @@
 import { Navigation } from 'react-native-navigation';
-import { FAVOURITE_SCREEN, HOME_SCREEN, SEARCH_SCREEN } from '../Screens';
+import { FAVOURITE_SCREEN, HISTORY_SCREEN, HOME_SCREEN, SEARCH_SCREEN } from '../Screens';
 
 export function setIndexBottomTab() {
   Navigation.setRoot({
@@ -47,7 +47,22 @@ export function setIndexBottomTab() {
                 },
               ],
               options: {
-                bottomTab: { text: 'Search' },
+                bottomTab: { text: 'Favourite' },
+              },
+            },
+          },
+          {
+            stack: {
+              children: [
+                {
+                  component: {
+                    id: HISTORY_SCREEN,
+                    name: HISTORY_SCREEN,
+                  },
+                },
+              ],
+              options: {
+                bottomTab: { text: 'History' },
               },
             },
           },

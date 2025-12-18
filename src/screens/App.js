@@ -1,5 +1,5 @@
-import Home from './HomeScreen/HomeScreen'
-import Search from './SearchScreen/SearchScreen'
+import Home from './home/homeScreen'
+import Search from './search/searchScreen'
 
 export {
     Home,
