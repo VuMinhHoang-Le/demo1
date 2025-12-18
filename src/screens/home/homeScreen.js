@@ -14,8 +14,6 @@ const HomeScreen = props => {
     errorWeather,
   } = useSelector(state => state.weatherState);
 
-  
-
   const dispatch = useDispatch();
 
   // Fetch weather data using
