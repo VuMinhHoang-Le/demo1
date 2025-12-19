@@ -51,7 +51,7 @@ const HomeScreen = props => {
           <Text style={styles.temperatureText}>
             {currentWeatherData.hourly.temperature_2m[currentTime.hour]} °C
           </Text>
-          <Text style={styles.timeText}>{locationName}</Text>
+          <Text style={styles.locationText}>{locationName}</Text>
           <Text style={styles.timeText}>
             Current time:{' '}
             {`${currentTime.day}/${currentTime.month}/${currentTime.year} ${currentTime.hour}:${currentTime.minute}`}

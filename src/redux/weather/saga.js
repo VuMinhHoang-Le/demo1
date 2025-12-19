@@ -15,10 +15,7 @@ import {
   GET_SEARCH_LOCATION_WEATHER,
   GET_LOCATION_NAME,
 } from './utils';
-import {
-  fetchApiWeatherToday,
-  getCoordinatesOnName,
-} from '../../api/api';
+import { fetchApiWeatherToday, getCoordinatesOnName } from '../../api/api';
 import { getDeviceLocation } from '../../services/LocationService';
 import {
   checkLocationPermission,
@@ -29,8 +26,7 @@ import { RESULTS } from 'react-native-permissions';
 export function* getCurrentLocationWeatherSaga(action) {
   console.log('get current location weather saga triggered', action.payload);
   try {
-
-    yield put(getCurrentLocationWeatherPending())
+    yield put(getCurrentLocationWeatherPending());
 
     const permission = yield call(checkLocationPermission);
     if (permission !== RESULTS.GRANTED) {
@@ -40,11 +36,7 @@ export function* getCurrentLocationWeatherSaga(action) {
     const position = yield call(getDeviceLocation);
     const { latitude, longitude } = position.coords;
 
-    const weatherData = yield call(
-      fetchApiWeatherToday,
-      latitude,
-      longitude,
-    );
+    const weatherData = yield call(fetchApiWeatherToday, latitude, longitude);
 
     yield put(getCurrentLocationWeatherSuccess(weatherData));
   } catch (err) {
@@ -55,6 +47,8 @@ export function* getCurrentLocationWeatherSaga(action) {
 export function* getSearchLocationWeatherSaga(action) {
   console.log('saga_list_click_trigger:', action.payload);
   try {
+    yield put(getSearchLocationWeatherPending());
+
     const searchName = action.payload;
     console.log('searchName: ', searchName);
     const locationData = yield call(getCoordinatesOnName, searchName);
@@ -64,13 +58,7 @@ export function* getSearchLocationWeatherSaga(action) {
       results: [{ name, country, latitude, longitude }],
     } = locationData;
 
-    yield put (getSearchLocationWeatherPending())
-
-    const weatherData = yield call(
-      fetchApiWeatherToday,
-      latitude,
-      longitude,
-    );
+    const weatherData = yield call(fetchApiWeatherToday, latitude, longitude);
 
     console.log('saga_sea_loc_weatherData:', weatherData);
 

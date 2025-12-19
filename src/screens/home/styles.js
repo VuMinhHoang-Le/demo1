@@ -23,6 +23,11 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 24,
   },
+  locationText: {
+    fontSize: 24,
+    color: '#155DFC',
+    fontWeight: 'bold',
+  },
   titleText: {
     fontSize: 32,
   },

@@ -1,5 +1,14 @@
 import React from 'react';
-import { StyleSheet, TextInput, View, Keyboard, Button } from 'react-native';
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  Keyboard,
+  Button,
+  Touchable,
+  TouchableOpacity,
+} from 'react-native';
+import { Image } from 'react-native-elements';
 
 export const SearchBar = ({
   clickedSearchBar,
@@ -19,17 +28,26 @@ export const SearchBar = ({
         }}
       />
       <View style={styles.button}>
-        <Button title="Search" onPress={() => {}} />
-      </View>
-      <View style={styles.button}>
-        <Button
-          title="Cancel"
+        <TouchableOpacity onPress={() => {}}>
+          <Image
+            source={require('../../assets/logo/search.png')}
+            style={styles.buttonLogo}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
           onPress={() => {
             Keyboard.dismiss();
             setSearchValue('');
             setClickedSearchBar(false);
           }}
-        />
+        >
+          <Image
+            source={require('../../assets/logo/x.png')}
+            style={styles.buttonLogo}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -38,7 +56,7 @@ export const SearchBar = ({
 const styles = StyleSheet.create({
   input: {
     height: 45,
-    width: '90%',
+    width: '70%',
     margin: 5,
     borderWidth: 1,
     borderRadius: 10,
@@ -47,11 +65,24 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1, // Take up the full screen
-    alignItems: 'center'
+    flexDirection: 'row',
   },
   button: {
-    width: '60%',
-    marginTop: 5,
+    width: 90,
+    height: 50,
+    marginTop: 15,
     marginBottom: 5,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-end',
+    gap: 20,
+  },
+  buttonText: {
+    alignContent: 'center',
+  },
+  buttonLogo: {
+    width: 24,
+    height: 24,
+    tintColor: '#9F0712',
   },
 });

@@ -12,7 +12,10 @@ const HistoryScreen = props => {
   const dispatch = useDispatch();
 
   return (
-    <View>
+    <View style={{
+      padding: 16,
+      
+    }}>
       <List
         data={histories}
         onPressItem={item => {

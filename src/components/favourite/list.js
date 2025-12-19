@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 
@@ -14,16 +15,18 @@ const Item = ({ item, onPress, onButtonPressRemove }) => (
     style={({ pressed }) => [styles.item, pressed && styles.pressed]}
   >
     <Text style={styles.itemText}> {item.title} </Text>
-    <TouchableOpacity
-      style={styles.buttonLogo}
-      onPress={() => onButtonPressRemove(item)}
-    >
-      <Image
-        source={require('../../assets/logo/trashcan.png')}
+    <View style={styles.iconContainer}>
+      <TouchableOpacity
         style={styles.buttonLogo}
-        resizeMode="contain"
-      />
-    </TouchableOpacity>
+        onPress={() => onButtonPressRemove(item)}
+      >
+        <Image
+          source={require('../../assets/logo/trashcan.png')}
+          style={styles.buttonLogo}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+    </View>
   </Pressable>
 );
 
@@ -48,11 +51,15 @@ const styles = StyleSheet.create({
   item: {
     margin: 5,
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: 'black',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   itemText: {
     fontSize: 20,
     margin: 10,
+    fontWeight: 'bold',
   },
   pressed: {
     opacity: 0.6,
@@ -60,5 +67,12 @@ const styles = StyleSheet.create({
   buttonLogo: {
     width: 24,
     height: 24,
+    tintColor: '#9F0712',
+  },
+  iconContainer: {
+    flexDirection: 'row', // stack icons vertically
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 8,
   },
 });

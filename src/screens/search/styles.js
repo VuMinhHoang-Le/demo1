@@ -4,8 +4,9 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  container: {
+  searchBar: {
     flex: 1,
+    justifyContent: 'flex-start'
   },
   item: {
     backgroundColor: 'gray',
@@ -19,7 +20,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   list: {
-    flex: 4,
+    flex: 10,
   }
 });
 
