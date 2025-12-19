@@ -9,7 +9,7 @@ export const historyReducer = handleActions(
   {
     [UPDATE_HISTORY.SUCCESS]: (state, action) => {
       const history = action.payload;
-      const filtered = state.histories.filter(h => h != history);
+      const filtered = state.histories.filter(h => h.id != history.id);
       return {
         ...state,
         histories: [history, ...filtered],
@@ -21,7 +21,7 @@ export const historyReducer = handleActions(
 
       return {
         ...state,
-        histories: state.histories.filter(h => h != history),
+        histories: state.histories.filter(h => h.id != history.id),
       };    
     },
   },

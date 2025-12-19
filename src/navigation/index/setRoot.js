@@ -1,5 +1,10 @@
 import { Navigation } from 'react-native-navigation';
-import { FAVOURITE_SCREEN, HISTORY_SCREEN, HOME_SCREEN, SEARCH_SCREEN } from '../Screens';
+import {
+  FAVOURITE_SCREEN,
+  HISTORY_SCREEN,
+  HOME_SCREEN,
+  SEARCH_SCREEN,
+} from '../Screens';
 
 export function setIndexBottomTab() {
   Navigation.setRoot({
@@ -17,7 +22,10 @@ export function setIndexBottomTab() {
                 },
               ],
               options: {
-                bottomTab: { text: 'Home' },
+                bottomTab: {
+                  text: 'Home',
+                  icon: require('../../assets/logo/home.png'),
+                },
               },
             },
           },
@@ -32,7 +40,10 @@ export function setIndexBottomTab() {
                 },
               ],
               options: {
-                bottomTab: { text: 'Search' },
+                bottomTab: {
+                  text: 'Search',
+                  icon: require('../../assets/logo/search.png'),
+                },
               },
             },
           },
@@ -47,7 +58,10 @@ export function setIndexBottomTab() {
                 },
               ],
               options: {
-                bottomTab: { text: 'Favourite' },
+                bottomTab: {
+                  text: 'Favourite',
+                  icon: require('../../assets/logo/favourite.png'),
+                },
               },
             },
           },
@@ -62,7 +76,10 @@ export function setIndexBottomTab() {
                 },
               ],
               options: {
-                bottomTab: { text: 'History' },
+                bottomTab: {
+                  text: 'History',
+                  icon: require('../../assets/logo/history.png'),
+                },
               },
             },
           },

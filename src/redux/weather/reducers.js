@@ -7,7 +7,7 @@ import {
 
 const defaultState = {
   weathers: [],
-  data: null,
+  currentWeatherData: null,
   locationName: '',
   loading: false,
   error: null,
@@ -15,10 +15,15 @@ const defaultState = {
 
 export const weatherReducer = handleActions(
   {
+    [GET_CURRENT_LOCATION_WEATHER.PENDING]: state => ({
+      ...state,
+      loading: true,
+    }),
     [GET_CURRENT_LOCATION_WEATHER.SUCCESS]: (state, action) => ({
       ...state,
       loading: false,
-      data: action.payload,
+      currentWeatherData: action.payload,
+      locationName: 'current GPS location'
     }),
 
     [GET_CURRENT_LOCATION_WEATHER.FAILED]: (state, action) => ({
@@ -26,13 +31,19 @@ export const weatherReducer = handleActions(
       loading: false,
       error: action.payload,
     }),
+
+    [GET_SEARCH_LOCATION_WEATHER.PENDING]: state => {
+      return {
+        ...state,
+        loading: true,
+      };
+    },
     [GET_SEARCH_LOCATION_WEATHER.SUCCESS]: (state, action) => {
-      console.log('REDUCER HIT:', action.payload);
       return {
         ...state,
         loading: false,
-        data: action.payload.weatherData,
-        locationName: action.payload.locationNae,
+        currentWeatherData: action.payload.weatherData,
+        locationName: action.payload.locationName,
       };
     },
 
@@ -44,7 +55,7 @@ export const weatherReducer = handleActions(
     [GET_LOCATION_NAME.SUCCESS]: (state, action) => ({
       ...state,
       loading: false,
-      data: action.payload,
+      currentWeatherData: action.payload,
     }),
 
     [GET_LOCATION_NAME.FAILED]: (state, action) => ({

@@ -3,7 +3,7 @@ import axios from 'axios';
 const FORECAST_BASE_URL = 'https://api.open-meteo.com/v1/forecast';
 const GEOCODING_BASE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
 
-export async function getCurrentLocationWeatherToday(lat, lon) {
+export async function fetchApiWeatherToday(lat, lon) {
   console.log('api_cur_wea: ', {lat, lon});
   try {
     const response = await axios.get(FORECAST_BASE_URL, {

@@ -7,6 +7,8 @@ import {
   getSearchLocationWeatherFailed,
   getLocationNameSuccess,
   getLocationNameFailed,
+  getCurrentLocationWeatherPending,
+  getSearchLocationWeatherPending,
 } from './actions';
 import {
   GET_CURRENT_LOCATION_WEATHER,
@@ -14,7 +16,7 @@ import {
   GET_LOCATION_NAME,
 } from './utils';
 import {
-  getCurrentLocationWeatherToday,
+  fetchApiWeatherToday,
   getCoordinatesOnName,
 } from '../../api/api';
 import { getDeviceLocation } from '../../services/LocationService';
@@ -27,6 +29,9 @@ import { RESULTS } from 'react-native-permissions';
 export function* getCurrentLocationWeatherSaga(action) {
   console.log('get current location weather saga triggered', action.payload);
   try {
+
+    yield put(getCurrentLocationWeatherPending())
+
     const permission = yield call(checkLocationPermission);
     if (permission !== RESULTS.GRANTED) {
       yield call(requestLocationPermission);
@@ -36,7 +41,7 @@ export function* getCurrentLocationWeatherSaga(action) {
     const { latitude, longitude } = position.coords;
 
     const weatherData = yield call(
-      getCurrentLocationWeatherToday,
+      fetchApiWeatherToday,
       latitude,
       longitude,
     );
@@ -59,8 +64,10 @@ export function* getSearchLocationWeatherSaga(action) {
       results: [{ name, country, latitude, longitude }],
     } = locationData;
 
+    yield put (getSearchLocationWeatherPending())
+
     const weatherData = yield call(
-      getCurrentLocationWeatherToday,
+      fetchApiWeatherToday,
       latitude,
       longitude,
     );

@@ -1,8 +1,14 @@
-import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import { Image } from 'react-native-elements';
 
 // Set up items in list to trigger pressed style
-const Item = ({ item, onPress, onButtonPress }) => (
+const Item = ({ item, onPress, onButtonPressRemove }) => (
   <Pressable
     onPress={() => onPress(item)}
     style={({ pressed }) => [styles.item, pressed && styles.pressed]}
@@ -10,23 +16,29 @@ const Item = ({ item, onPress, onButtonPress }) => (
     <Text style={styles.itemText}> {item.title} </Text>
     <TouchableOpacity
       style={styles.buttonLogo}
-      onPress={() => onButtonPress(item)}
+      onPress={() => onButtonPressRemove(item)}
     >
-        <Image
-          source={require('../../assets/logo/favourite.png')}
-          style={styles.buttonLogo}
-          resizeMode="contain"
-        />
+      <Image
+        source={require('../../assets/logo/trashcan.png')}
+        style={styles.buttonLogo}
+        resizeMode="contain"
+      />
     </TouchableOpacity>
   </Pressable>
 );
 
 // Set up list, render each item pressable and trigger onPressItem -> Callback to Search.js
-export const List = ({ data, onPressItem, onButtonPressItem }) => {
+export const List = ({ data, onPressItem, onButtonPressItemRemove }) => {
   return (
     <FlatList
       data={data}
-      renderItem={({ item }) => <Item item={item} onPress={onPressItem} onButtonPress={onButtonPressItem} />}
+      renderItem={({ item }) => (
+        <Item
+          item={item}
+          onPress={onPressItem}
+          onButtonPressRemove={onButtonPressItemRemove}
+        />
+      )}
       keyExtractor={item => item.id}
     />
   );
@@ -46,10 +58,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonLogo: {
-  width: 24,
-  height: 24,
-    flexDirection: 'row',             // horizontal layout
-  justifyContent: 'space-between',  // text left, icon right
-  alignItems: 'flex-start',  
-},
+    width: 24,
+    height: 24,
+  },
 });

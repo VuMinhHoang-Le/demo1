@@ -6,7 +6,8 @@ import { List } from '../../components/search/list';
 import { GEO_DATA } from '../../utils/GeoList';
 import { useSelector, useDispatch } from 'react-redux';
 import { getSearchLocationWeatherHandled } from '../../redux/weather/actions';
-import { updateHistorySuccess} from '../../redux/history/actions'
+import { updateHistorySuccess } from '../../redux/history/actions';
+import { updateFavouriteSuccess } from '../../redux/favourite/actions';
 const SearchScreen = props => {
   const geoData = GEO_DATA;
 
@@ -40,14 +41,19 @@ const SearchScreen = props => {
         clickedSearchBar={clickedSearchBar}
         setClickedSearchBar={setClickedSearchBar}
       />
-      
 
       {clickedSearchBar && (
         <View style={styles.list}>
-          <List data={filterData} onPressItem={item => {
-            dispatch(updateHistorySuccess(item));
-            dispatch(getSearchLocationWeatherHandled(item.name));
-          }} />
+          <List
+            data={filterData}
+            onPressItem={item => {
+              dispatch(updateHistorySuccess(item));
+              dispatch(getSearchLocationWeatherHandled(item.name));
+            }}
+            onButtonPressItem={item => {
+              dispatch(updateFavouriteSuccess(item))
+            }}
+          />
         </View>
       )}
     </View>
