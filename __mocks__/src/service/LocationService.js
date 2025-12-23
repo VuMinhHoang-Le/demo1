@@ -1,0 +1,1 @@
+export const getDeviceLocation = jest.fn();

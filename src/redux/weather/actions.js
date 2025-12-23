@@ -31,7 +31,7 @@ export const getSearchLocationWeatherFailed = createAction(
 );
 export const getLocationNameSuccess = createAction(
   GET_LOCATION_NAME.SUCCESS,
-)
+);
 export const getLocationNameFailed = createAction(
   GET_LOCATION_NAME.FAILED,
-)
+);

@@ -11,6 +11,10 @@ const defaultState = {
   locationName: '',
   loading: false,
   error: null,
+  //
+  searchWeatherData: null,
+  searchLocationName: '',
+  searchLoading: '',
 };
 
 export const weatherReducer = handleActions(
@@ -23,7 +27,7 @@ export const weatherReducer = handleActions(
       ...state,
       loading: false,
       currentWeatherData: action.payload,
-      locationName: 'current GPS location'
+      locationName: 'current GPS location',
     }),
 
     [GET_CURRENT_LOCATION_WEATHER.FAILED]: (state, action) => ({
@@ -52,17 +56,17 @@ export const weatherReducer = handleActions(
       loading: false,
       error: action.payload,
     }),
-    [GET_LOCATION_NAME.SUCCESS]: (state, action) => ({
-      ...state,
-      loading: false,
-      currentWeatherData: action.payload,
-    }),
+    // [GET_LOCATION_NAME.SUCCESS]: (state, action) => ({
+    //   ...state,
+    //   loading: false,
+    //   currentWeatherData: action.payload,
+    // }),
 
-    [GET_LOCATION_NAME.FAILED]: (state, action) => ({
-      ...state,
-      loading: false,
-      error: action.payload,
-    }),
+    // [GET_LOCATION_NAME.FAILED]: (state, action) => ({
+    //   ...state,
+    //   loading: false,
+    //   error: action.payload,
+    // }),
   },
   defaultState,
 );

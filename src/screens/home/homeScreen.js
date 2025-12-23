@@ -12,18 +12,17 @@ import { getCurrentDateTime } from '../../services/DateTimeService';
 import styles from './styles';
 import { Image } from 'react-native-elements';
 
+import { selectCurrentWeatherData, selectLocationName, selectLoading } from '../../redux/weather/selectors';
+
 const HomeScreen = props => {
   const [currentTime, setCurrentTime] = useState(null);
-  const { weathers, currentWeatherData, locationName, loading, error } =
-    useSelector(state => state.weatherState);
-
-  console.log('currentWeatherData: ', currentWeatherData);
+  const currentWeatherData = useSelector(selectCurrentWeatherData);
+  const locationName = useSelector(selectLocationName);
+  const loading = useSelector(selectLoading);
   const dispatch = useDispatch();
 
-  // Fetch weather data using
   useEffect(() => {
     dispatch(getCurrentLocationWeatherHandled());
-    setCurrentTime(getCurrentDateTime());
   }, []);
 
   useEffect(() => {

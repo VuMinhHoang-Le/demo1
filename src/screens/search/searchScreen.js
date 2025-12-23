@@ -71,4 +71,12 @@ SearchScreen.options = {
   },
 };
 
+const action = [
+  {
+    key: 'favourite',
+    icon: require('../../assets/logo/favourite.png'),
+    onPress: item => dispatch(updateFavouriteSuccess(item)),
+  },
+];
+
 export default SearchScreen;
