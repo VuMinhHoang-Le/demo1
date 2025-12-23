@@ -53,15 +53,15 @@ describe('Search Location Weather: ', () => {
 
   it('set loading and currentWeatherData and locationName on GET_SEARCH_LOCATION_WEATHER.SUCCESS', () => {
     const state =
-      (undefined,
-      getSearchLocationWeatherSuccess({ mockWeatherData, mockLocationName }));
+      weatherReducer(undefined,
+      getSearchLocationWeatherSuccess({ weatherData: mockWeatherData, locationName: mockLocationName }));
     expect(state.loading).toBe(false);
     expect(state.currentWeatherData).toEqual(mockWeatherData);
     expect(state.locationName).toEqual(mockLocationName);
   });
 
   it('set loading and error on GET_SEARCH_LOCATION_WEATHER.FAILED', () => {
-    const state = (undefined, getSearchLocationWeatherFailed(mockError));
+    const state = weatherReducer(undefined, getSearchLocationWeatherFailed(mockError));
     expect(state.loading).toBe(false);
     expect(state.error).toEqual(mockError);
   });
