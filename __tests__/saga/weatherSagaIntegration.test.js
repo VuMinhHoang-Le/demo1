@@ -43,7 +43,7 @@ afterEach(() => {
 //--------------- Test Current Location Weather Saga ---------------//
 
 describe('getCurrentLocationWeatherSaga', () => {
-  it('dispatch successfully when current location weather succeeds', () => {
+  it('dispatch saga success when current location weather succeeds', () => {
     return expectSaga(getCurrentLocationWeatherSaga)
       .provide([
         [call(checkLocationPermission), RESULTS.GRANTED],
@@ -62,7 +62,7 @@ describe('getCurrentLocationWeatherSaga', () => {
       .run();
   });
 
-  it('dispatch failed when device location is invalid', () => {
+  it('dispatch saga failed when device location is invalid', () => {
     return expectSaga(getCurrentLocationWeatherSaga)
       .provide([
         [call(checkLocationPermission), RESULTS.GRANTED],
@@ -79,7 +79,7 @@ describe('getCurrentLocationWeatherSaga', () => {
       .run();
   });
 
-  it('dispatch failed when weather data is invalid', () => {
+  it('dispatch saga failed when weather data is invalid', () => {
     return expectSaga(getCurrentLocationWeatherSaga)
       .provide([
         [call(checkLocationPermission), RESULTS.GRANTED],
@@ -108,7 +108,7 @@ describe('getCurrentLocationWeatherSaga', () => {
 //--------------- Test Search Location Weather Saga ---------------//
 
 describe('getSearchLocationWeatherSaga', () => {
-  it('dispatch successfully when search location weather succeeds', () => {
+  it('dispatch saga success when search location weather succeeds', () => {
     return expectSaga(getSearchLocationWeatherSaga, {
       payload: mockSearchName,
     })
@@ -136,7 +136,7 @@ describe('getSearchLocationWeatherSaga', () => {
       .run();
   });
 
-  it('dispatch failed when search name is invalid', () => {
+  it('dispatch saga failed when search name is invalid', () => {
     return expectSaga(getSearchLocationWeatherSaga, {
       payload: null,
     })
@@ -151,7 +151,7 @@ describe('getSearchLocationWeatherSaga', () => {
       .run();
   });
 
-  it('dispatch failed when location data is invalid', () => {
+  it('dispatch saga failed when location data is invalid', () => {
     return expectSaga(getSearchLocationWeatherSaga, {
       payload: mockSearchName,
     })
@@ -167,7 +167,7 @@ describe('getSearchLocationWeatherSaga', () => {
       .run();
   });
 
-  it('dispatch failed when weather data is invalid', () => {
+  it('dispatch saga failed when weather data is invalid', () => {
     return expectSaga(getSearchLocationWeatherSaga, {
       payload: mockSearchName,
     })

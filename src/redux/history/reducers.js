@@ -17,7 +17,6 @@ export const historyReducer = handleActions(
     },
     [REMOVE_HISTORY.SUCCESS]: (state, action) => {
       const history = action.payload;
-      console.log('redu_hist_remv_payload', history);
 
       return {
         ...state,

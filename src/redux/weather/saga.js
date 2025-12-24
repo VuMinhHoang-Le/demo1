@@ -29,7 +29,8 @@ export function* getCurrentLocationWeatherSaga(action) {
 
     const permission = yield call(checkLocationPermission);
     if (permission !== RESULTS.GRANTED) {       // Add cases if user press No (permission = no, pressNo = true)
-      yield call(requestLocationPermission);
+      const requestPermission = yield call(requestLocationPermission);
+      if (requestPermission !== RESULTS.GRANTED) throw new Error('Location permission DENIED')
     }
 
     const position = yield call(getDeviceLocation);
@@ -39,7 +40,7 @@ export function* getCurrentLocationWeatherSaga(action) {
     const { latitude, longitude } = position.coords;
 
     const weatherData = yield call(fetchApiWeatherToday, latitude, longitude);
-    if (!weatherData || weatherData == {} || weatherData.error)
+    if (!weatherData || weatherData.error)
       throw new Error('cannot get current weather data');
 
     yield put(getCurrentLocationWeatherSuccess(weatherData));
@@ -52,7 +53,6 @@ export function* getCurrentLocationWeatherSaga(action) {
 //--------------- Search Location Weather Saga ---------------//
 
 export function* getSearchLocationWeatherSaga(action) {
-  console.log('SUCCESS triggered item at Search Screen:', action.payload);
   try {
     yield put(getSearchLocationWeatherPending());
 

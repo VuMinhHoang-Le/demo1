@@ -14,7 +14,7 @@ export const mochWeatherDataError = {
 };
 
 export const mockLocationName = 'city, country';
-export const mockSearchName = 'country';
+export const mockSearchName = 'city';
 
 export const mockLocationData = {
   results: [

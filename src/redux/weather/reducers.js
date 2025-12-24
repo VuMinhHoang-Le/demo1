@@ -56,17 +56,6 @@ export const weatherReducer = handleActions(
       loading: false,
       error: action.payload,
     }),
-    // [GET_LOCATION_NAME.SUCCESS]: (state, action) => ({
-    //   ...state,
-    //   loading: false,
-    //   currentWeatherData: action.payload,
-    // }),
-
-    // [GET_LOCATION_NAME.FAILED]: (state, action) => ({
-    //   ...state,
-    //   loading: false,
-    //   error: action.payload,
-    // }),
   },
   defaultState,
 );

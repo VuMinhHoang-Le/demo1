@@ -1,10 +1,9 @@
 import { weatherReducer } from '../../src/redux/weather/reducers';
 
 import {
-  mockLocationData,
-  mockWeatherData,
-  mockLocationName,
   mockError,
+  mockLocationName,
+  mockWeatherData
 } from '../../__mocks__/testUtils/mockDataWeather';
 import {
   getCurrentLocationWeatherFailed,
@@ -15,7 +14,8 @@ import {
   getSearchLocationWeatherSuccess,
 } from '../../src/redux/weather/actions';
 
-//--------------- Current Location Weather ---------------//
+
+//--------------- Current Location Weather Reducer---------------//
 
 describe('Current Location Weather: ', () => {
   it('set loading on GET_CURRENT_LOCATION_WEATHER.PENDING', () => {
@@ -43,25 +43,32 @@ describe('Current Location Weather: ', () => {
   });
 });
 
-//--------------- Search Location Weather ---------------//
+//--------------- Search Location Weather Reducer---------------//
 
-describe('Search Location Weather: ', () => {
+describe('Search Location Weather Reducer: ', () => {
   it('setloading on GET_SEARCH_LOCATION_WEATHER.PENDING', () => {
     const state = weatherReducer(undefined, getSearchLocationWeatherPending());
     expect(state.loading).toBe(true);
   });
 
   it('set loading and currentWeatherData and locationName on GET_SEARCH_LOCATION_WEATHER.SUCCESS', () => {
-    const state =
-      weatherReducer(undefined,
-      getSearchLocationWeatherSuccess({ weatherData: mockWeatherData, locationName: mockLocationName }));
+    const state = weatherReducer(
+      undefined,
+      getSearchLocationWeatherSuccess({
+        weatherData: mockWeatherData,
+        locationName: mockLocationName,
+      }),
+    );
     expect(state.loading).toBe(false);
     expect(state.currentWeatherData).toEqual(mockWeatherData);
     expect(state.locationName).toEqual(mockLocationName);
   });
 
   it('set loading and error on GET_SEARCH_LOCATION_WEATHER.FAILED', () => {
-    const state = weatherReducer(undefined, getSearchLocationWeatherFailed(mockError));
+    const state = weatherReducer(
+      undefined,
+      getSearchLocationWeatherFailed(mockError),
+    );
     expect(state.loading).toBe(false);
     expect(state.error).toEqual(mockError);
   });
